@@ -3,7 +3,7 @@ import torch.nn as nn
 class CNN(nn.Module):
     def __init__(self, genes, input_channels=3, num_classes=10, input_size=32):
         super(CNN, self).__init__()
-        
+
         layers = []
         in_channels = input_channels
         current_size = input_size
@@ -12,7 +12,7 @@ class CNN(nn.Module):
             filters = conv_config['filters']
             kernel_size = conv_config['kernel_size']
             padding = kernel_size // 2
-            
+
             layers.append(nn.Conv2d(in_channels, filters, kernel_size, padding=padding))
             layers.append(nn.BatchNorm2d(filters))
 
@@ -27,9 +27,9 @@ class CNN(nn.Module):
                 else:
                     layers.append(nn.AvgPool2d(2, 2))
                 current_size = current_size // 2
-            
+
             in_channels = filters
-        
+
         self.features = nn.Sequential(*layers)
         self.flat_size = in_channels * current_size * current_size
 
@@ -40,7 +40,7 @@ class CNN(nn.Module):
             nn.Dropout(0.5),
             nn.Linear(genes['fc_units'], num_classes)
         )
-    
+
     def forward(self, x):
         x = self.features(x)
         x = self.classifier(x)
