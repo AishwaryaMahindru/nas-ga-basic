@@ -1,9 +1,11 @@
+# model_ga.py
+
 import torch, random, os, json
 import torch.nn as nn
 from torch.optim import AdamW
 from copy import deepcopy
 
-from model_cnn import CNN
+# from model_cnn import CNN
 
 # Define the search space for CNN architecture
 class CNNSearchSpace:
@@ -112,11 +114,13 @@ class GeneticAlgorithm:
             conv_params = 0
             fc_params = 0
 
-            for name, param in model.named_parameters():
-                if 'feature_extractor' in name:
-                    conv_params += param.numel()
-                elif 'classifier' in name or 'head' in name:
-                    fc_params += param.numel()
+            for module in model.modules():
+                if isinstance(module, nn.Conv2d):
+                    conv_params += sum(p.numel() for p in module.parameters())
+
+                elif isinstance(module, nn.Linear):
+                    fc_params += sum(p.numel() for p in module.parameters())
+
 
             # Question 1 - b
             w_conv = 0.7
