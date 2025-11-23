@@ -124,13 +124,12 @@ class GeneticAlgorithm:
 
             penalty = (w_conv * conv_params + w_fc * fc_params) * 1e-6
 
-            # Fitness = accuracy - lambda * complexity
             architecture.accuracy = best_acc
             architecture.best_epoch = best_epoch
             architecture.fitness = best_acc - penalty
 
-            # num_params = sum(p.numel() for p in model.parameters())
-            # complexity_penalty = num_params / 1e6  # Normalize
+            old_num_params = sum(p.numel() for p in model.parameters())
+            old_penalty = old_num_params / 1e6  # Normalize
 
             del model, inputs, outputs, labels
             torch.cuda.empty_cache()
@@ -139,6 +138,17 @@ class GeneticAlgorithm:
             # architecture.accuracy = best_acc
             # architecture.best_epoch = best_epoch
             # architecture.fitness = best_acc - 0.01 * penalty
+
+            new_penalty = penalty
+            difference = new_penalty - old_penalty
+
+            print("\n[Q1B] Architecture Complexity Report:")
+            print(f"Conv Parameters: {conv_params}")
+            print(f"FC Parameters: {fc_params}")
+            print(f"Old Penalty (all params equally):{old_penalty:.8f}")
+            print(f"New Penalty (weighted): {new_penalty:.8f}")
+            print(f"Difference (New - Old): {difference:.8f}")
+            print(f"Final Fitness: {architecture.fitness:.6f}\n")
 
             return architecture.fitness
 
@@ -159,7 +169,7 @@ class GeneticAlgorithm:
         #     selected.append(winner)
 
 
-        # Question 1 - a
+        # Question 1A
         """Roulette Wheel selection"""
         k = 2
         fitnesses = [c.fitness for c in self.population]
@@ -182,6 +192,13 @@ class GeneticAlgorithm:
                 if r <= c:
                     selected.append(idx)
                     break
+
+        print("\n[Q1A] Roulette Wheel Selection Details:")
+        print("Index | Fitness | Probability | Cumulative")
+        for i, (fit, prob, cum) in enumerate(zip(fitnesses, probs, cumulative)):
+            print(f"{i:5d} | {fit:.6f} | {prob:.6f} | {cum:.6f}")
+        print()
+
         return selected
 
     def crossover(self, parent1, parent2):
